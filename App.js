@@ -9,18 +9,28 @@ import {
 	Dimensions,
 	ActivityIndicator,
 } from "react-native";
+import { Fontisto } from "@expo/vector-icons";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const API_KEY = "7991634b36a09e5324877e87f08c3120";
+const icons = {
+	Clear: "day-sunny",
+	Clouds: "cloudy",
+	Atmosphere: "cloudy-gusts",
+	Snow: "snow",
+	Rain: "rains",
+	Drizzle: "rain",
+	Thunderstorm: "lighting",
+};
 
 export default function App() {
 	const [location, setLocation] = useState(null);
 	const [ok, setOk] = useState(true);
 	const [city, setCity] = useState("--");
-	const [district, setDistrict] = useState("--");
+	const [district, setDistrict] = useState("--동");
 	const [days, setDays] = useState("");
 
-	const ask = async () => {
+	const getWeather = async () => {
 		try {
 			console.log("위치 정보 가져오는 중...");
 			const { granted } = await Location.requestForegroundPermissionsAsync();
@@ -52,7 +62,7 @@ export default function App() {
 	};
 
 	useEffect(() => {
-		ask();
+		getWeather();
 	}, [location]);
 
 	return (
@@ -67,7 +77,7 @@ export default function App() {
 				showsHorizontalScrollIndicator={false}
 				contentContainerStyle={style.weather}
 			>
-				{days.length === 0 ? (
+				{!days ? (
 					// 로딩 화면
 					<View style={style.day}>
 						<ActivityIndicator
@@ -79,13 +89,18 @@ export default function App() {
 				) : (
 					days.map((day, index) => (
 						<View key={index} style={style.day}>
-							<Text style={style.temp}>
-								{parseFloat(day.main.temp).toFixed(1)}
-							</Text>
+							<View style={style.first}>
+								<Text style={style.temp}>
+									{parseFloat(day.main.temp).toFixed(1)}
+								</Text>
+
+								<Fontisto
+									name={icons[day.weather[0].main]}
+									size="80"
+									color="lightgray"
+								/>
+							</View>
 							<Text style={style.humidity}>{day.main.humidity}%</Text>
-							<Text
-								style={style.wetherStatus}
-							>{`${day.weather[0].main}, ${day.weather[0].description}`}</Text>
 						</View>
 					))
 				)}
@@ -113,7 +128,7 @@ const style = StyleSheet.create({
 		marginVertical: "auto",
 		marginHorizontal: "0",
 		color: "#000",
-		fontSize: 60,
+		fontSize: 50,
 		fontWeight: "600",
 	},
 	districtName: {
@@ -125,24 +140,26 @@ const style = StyleSheet.create({
 	weather: {},
 	day: {
 		width: SCREEN_WIDTH,
+	},
+	first: {
+		width: "100%",
+		flexDirection: "row",
+		justifyContent: "space-between",
 		alignItems: "center",
+		paddingHorizontal: "10%",
 	},
 	temp: {
 		alignItems: "center",
-		paddingTop: 20,
 		color: "lightgray",
 		fontSize: 120,
 		fontWeight: "600",
 	},
+
 	humidity: {
+		marginTop: -20,
+		paddingHorizontal: "10%",
 		color: "lightgray",
-		fontSize: 70,
+		fontSize: 65,
 		fontWeight: "500",
-	},
-	wetherStatus: {
-		alignItems: "center",
-		marginVertical: 5,
-		fontSize: 30,
-		fontWeight: "300",
 	},
 });
